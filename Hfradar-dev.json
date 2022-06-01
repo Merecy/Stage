@@ -21,17 +21,18 @@
       }
     ]
   },
+  "description": "DashBoard de Hfradar-dev",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 6,
+  "id": 3,
   "links": [],
   "liveNow": false,
   "panels": [
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "0eWpnp9nz"
+        "uid": "16Gq3J9nz"
       },
       "description": "Debit ascendant et descendant ",
       "fieldConfig": {
@@ -86,12 +87,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 10,
+        "h": 7,
+        "w": 9,
         "x": 0,
         "y": 0
       },
-      "id": 14,
+      "id": 2,
       "options": {
         "legend": {
           "calcs": [],
@@ -107,9 +108,9 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "0eWpnp9nz"
+            "uid": "16Gq3J9nz"
           },
-          "query": "from(bucket: v.bucket)\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"net\")\n  |> filter(fn: (r) => r._field == \"bytes_recv\" or r._field == \"bytes_sent\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> derivative(unit: 1s, nonNegative: false)\n  |> yield(name: \"derivative\")",
+          "query": "from(bucket: \"Telegraf_Hfradar_Bucket\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"net\")\n  |> filter(fn: (r) => r._field == \"bytes_recv\" or r._field == \"bytes_sent\")\n  |> filter(fn: (r) => r.host == \"hfradar-dev\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> derivative(unit: 1s, nonNegative: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
@@ -125,7 +126,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "0eWpnp9nz"
+        "uid": "16Gq3J9nz"
       },
       "description": "Nombre de jour que le systeme est ON. Se remet a 0 apres un reboot de la machine.",
       "fieldConfig": {
@@ -140,10 +141,6 @@
               {
                 "color": "purple",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
@@ -152,12 +149,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 7,
-        "x": 10,
+        "h": 7,
+        "w": 6,
+        "x": 9,
         "y": 0
       },
-      "id": 4,
+      "id": 8,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -177,9 +174,9 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "0eWpnp9nz"
+            "uid": "16Gq3J9nz"
           },
-          "query": "from(bucket: v.bucket)\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"system\")\n  |> filter(fn: (r) => r._field == \"uptime\")\n   |> last()\n   |> map(fn: (r) => ({r with _value: r._value / 86400}))\n  |> yield(name: \"last\")",
+          "query": "from(bucket: \"Telegraf_Hfradar_Bucket\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"system\")\n  |> filter(fn: (r) => r._field == \"uptime\")\n   |> last()\n   |> map(fn: (r) => ({r with _value: r._value / 86400}))\n  |> yield(name: \"last\")",
           "refId": "A"
         }
       ],
@@ -189,7 +186,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "0eWpnp9nz"
+        "uid": "16Gq3J9nz"
       },
       "description": "Pourcentage du disque qui est utilise.",
       "fieldConfig": {
@@ -206,6 +203,10 @@
                 "value": null
               },
               {
+                "color": "orange",
+                "value": 70
+              },
+              {
                 "color": "red",
                 "value": 80
               }
@@ -216,12 +217,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 7,
-        "x": 17,
+        "h": 7,
+        "w": 9,
+        "x": 15,
         "y": 0
       },
-      "id": 6,
+      "id": 10,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -241,19 +242,20 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "0eWpnp9nz"
+            "uid": "16Gq3J9nz"
           },
-          "query": "from(bucket: v.bucket)\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"disk\")\n  |> filter(fn: (r) => r._field == \"used_percent\")\n  |> filter(fn: (r)=> r.fstype == \"ext4\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"Telegraf_Hfradar_Bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"disk\")\n  |> filter(fn: (r) => r[\"_field\"] == \"used_percent\")\n  |> filter(fn: (r) => r[\"device\"] == \"mapper/pve-vm--80143--disk--0\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
       "title": "Disque Utilise",
+      "transformations": [],
       "type": "stat"
     },
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "0eWpnp9nz"
+        "uid": "16Gq3J9nz"
       },
       "fieldConfig": {
         "defaults": {
@@ -301,17 +303,18 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "%"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
-        "w": 10,
+        "h": 8,
+        "w": 9,
         "x": 0,
-        "y": 8
+        "y": 7
       },
-      "id": 10,
+      "id": 4,
       "options": {
         "legend": {
           "calcs": [],
@@ -327,9 +330,9 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "0eWpnp9nz"
+            "uid": "16Gq3J9nz"
           },
-          "query": "from(bucket: v.bucket)\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"cpu\")\n  |> filter(fn: (r) => r._field == \"usage_user\" or r._field == \"usage_system\")\n  |> filter(fn: (r) => r.cpu == \"cpu-total\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"Telegraf_Hfradar_Bucket\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"cpu\")\n  |> filter(fn: (r) => r._field == \"usage_user\" or r._field == \"usage_system\")\n  |> filter(fn: (r) => r.cpu == \"cpu-total\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
@@ -345,7 +348,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "0eWpnp9nz"
+        "uid": "16Gq3J9nz"
       },
       "description": "Pourcentage de la memoire active utilise.",
       "fieldConfig": {
@@ -362,8 +365,12 @@
                 "value": null
               },
               {
-                "color": "red",
+                "color": "orange",
                 "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           },
@@ -373,11 +380,11 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 7,
-        "x": 17,
-        "y": 8
+        "w": 9,
+        "x": 15,
+        "y": 7
       },
-      "id": 2,
+      "id": 12,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -397,9 +404,9 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "0eWpnp9nz"
+            "uid": "16Gq3J9nz"
           },
-          "query": "from(bucket: v.bucket)\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"mem\")\n  |> filter(fn: (r) => r._field == \"used_percent\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"Telegraf_Hfradar_Bucket\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"mem\")\n  |> filter(fn: (r) => r._field == \"used_percent\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
@@ -409,7 +416,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "0eWpnp9nz"
+        "uid": "16Gq3J9nz"
       },
       "description": "Nombre de bytes ecrit ou lu.",
       "fieldConfig": {
@@ -465,19 +472,19 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 10,
+        "w": 9,
         "x": 0,
         "y": 15
       },
-      "id": 8,
+      "id": 6,
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom"
         },
         "tooltip": {
-          "mode": "none",
+          "mode": "single",
           "sort": "none"
         }
       },
@@ -485,9 +492,9 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "0eWpnp9nz"
+            "uid": "16Gq3J9nz"
           },
-          "query": "from(bucket: v.bucket)\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"diskio\")\n  |> filter(fn: (r) => r._field == \"read_bytes\" or r._field == \"write_bytes\")\n  |> filter(fn: (r) => r.name == \"sda\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> derivative(unit: 1s, nonNegative: false)\n  |> yield(name: \"derivative\")",
+          "query": "from(bucket: \"Telegraf_Hfradar_Bucket\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"diskio\")\n  |> filter(fn: (r) => r._field == \"read_bytes\" or r._field == \"write_bytes\")\n  |> filter(fn: (r) => r.name == \"sda\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> derivative(unit: 1s, nonNegative: false)\n  |> yield(name: \"derivative\")",
           "refId": "A"
         }
       ],
@@ -503,9 +510,9 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "0eWpnp9nz"
+        "uid": "16Gq3J9nz"
       },
-      "description": "Charge sur le CPU, vu que l'on possede juste 2 cpus, cela peut monter jusqu'a 200%",
+      "description": "Charge sur le CPU sur la derniere minute, vu que l'on possede juste 2 cpus, cela peut monter jusqu'a 200%",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -521,7 +528,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 150
               }
             ]
           },
@@ -531,11 +538,11 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 7,
-        "x": 17,
-        "y": 16
+        "w": 9,
+        "x": 15,
+        "y": 15
       },
-      "id": 12,
+      "id": 14,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -555,9 +562,9 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "0eWpnp9nz"
+            "uid": "16Gq3J9nz"
           },
-          "query": "from(bucket: v.bucket)\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"system\")\n  |> filter(fn: (r) => r._field == \"load1\")\n |> last()\n  |> yield(name: \"mean\")",
+          "query": "from(bucket: \"Telegraf_Hfradar_Bucket\")\n  |> range(start: v.timeRangeStart)\n  |> filter(fn: (r) => r._measurement == \"system\")\n  |> filter(fn: (r) => r._field == \"load1\")\n |> last()\n  |> yield(name: \"mean\")",
           "refId": "A"
         }
       ],
@@ -574,9 +581,6 @@
             },
             "mode": "binary",
             "reduce": {
-              "include": [
-                "load1 hfradar-dev"
-              ],
               "reducer": "sum"
             },
             "replaceFields": true
@@ -600,7 +604,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "HFRADAR-DEV",
-  "uid": "cnzMoo9nk",
-  "version": 1,
+  "uid": "dtXbRbr7k",
+  "version": 3,
   "weekStart": ""
 }
